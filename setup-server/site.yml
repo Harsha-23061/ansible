@@ -1,0 +1,6 @@
+---
+- name: Configure new EC2 server with essential tools
+  hosts: new_server
+  become: yes
+  tasks:
+    - include_tasks: tasks/main.yml

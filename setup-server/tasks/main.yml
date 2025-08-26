@@ -1,0 +1,66 @@
+---
+- name: Update APT cache
+  apt:
+    update_cache: yes
+
+- name: Install essential packages
+  apt:
+    name:
+      - curl
+      - git
+      - unzip
+      - htop
+      - vim
+      - build-essential
+      - redis-tools
+    state: present
+
+- name: Install Node.js (LTS) and npm
+  shell: |
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+    apt-get install -y nodejs
+  args:
+    executable: /bin/bash
+
+- name: Install PM2 globally
+  npm:
+    name: pm2
+    global: yes
+
+- name: Install Docker dependencies
+  apt:
+    name:
+      - ca-certificates
+      - gnupg
+      - lsb-release
+    state: present
+
+- name: Add Docker GPG key
+  shell: |
+    mkdir -p /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+- name: Add Docker repository
+  shell: |
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+      $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+- name: Update APT after Docker repo added
+  apt:
+    update_cache: yes
+
+- name: Install Docker Engine
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-compose-plugin
+    state: present
+
+- name: Add ubuntu user to docker group
+  user:
+    name: ubuntu
+    groups: docker
+    append: yes
